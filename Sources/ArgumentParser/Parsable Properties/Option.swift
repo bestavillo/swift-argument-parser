@@ -232,18 +232,22 @@ extension Option {
     help: ArgumentHelp? = nil
   ) where Value == T? {
     self.init(_parsedValue: .init { key in
-      ArgumentSet.init(
+      var arg = ArgumentDefinition(
         key: key,
         kind: .name(key: key, specification: name),
         parsingStrategy: ArgumentDefinition.ParsingStrategy(parsingStrategy),
-        parseType: T.self,
-        name: name,
-        default: nil,
-        help: help)
-      })
+        parser: T.init(argument:),
+        default: nil)
+      arg.help.help = help
+      return ArgumentSet(arg.optional)
+    })
   }
 
-  @available(*, deprecated, message: "Default values don't make sense for optional properties. Remove the 'default' parameter if its value is nil, or make your property non-optional if it's non-nil.")
+  @available(*, deprecated, message: """
+    Default values don't make sense for optional properties.
+    Remove the 'default' parameter if its value is nil,
+    or make your property non-optional if it's non-nil.
+    """)
   public init<T: ExpressibleByArgument>(
     name: NameSpecification = .long,
     default initial: T?,
